@@ -1,56 +1,23 @@
 import React, {Component} from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlusCircle } from '@fortawesome/free-solid-svg-icons'
 
 class ProfesionalForm extends Component {
-    constructor(props){
-        super(props);
-        this.state = {
-            nombre: '',
-            apellido: '',
-            profesion: '',
-            matricula: '',
-            id: ''
-        }
 
-        this.allProfesionales = this.props.profesionales.bind(this)
+    handleChange = e => {
+        this.props.onChangeInput(e.target.name, e.target.value)
     }
 
-    _handleChange = e => {
-        const {name, value} = e.target
-        this.setState({[name]: value})
+    handleOnSubmit = e => {
+        this.props.onSubmit(e)
     }
 
-    _handleOnSubmit = e => {
-        e.preventDefault()
-        const profesional = {
-            nombre: this.state.nombre,
-            apellido: this.state.apellido,
-            profesion: this.state.profesion,
-            matricula: this.state.matricula
-        }
-        fetch('http://localhost:8080/api/profesional',{
-                method: 'POST',
-                body: JSON.stringify(profesional),
-                headers: {'Accept': 'application/json', 'Content-type':'application/json'}
-            })
-            .then(res => res.json())
-            .then(data => {
-                console.log(data);
-                this.allProfesionales()
-                this.inputEmpty();
-            })
+    handleOnUpload = e => {
+        this.props.onUpload(e)
     }
 
-    inputEmpty(){
-        this.setState({
-            nombre: '',
-            apellido: '',
-            profesion: '',
-            matricula: ''
-        })
-    }
-
-    canBeSubmitted(){
-        const { nombre, apellido, profesion, matricula } = this.state
+    isEnabled = () => {
+        const { nombre, apellido, profesion, matricula } = this.props.estado
         return (
             nombre.length > 2 &&
             apellido.length > 2 &&
@@ -60,42 +27,66 @@ class ProfesionalForm extends Component {
     }
 
     render() {
-        const isEnabled = this.canBeSubmitted();
-
+        const { nombre, apellido, profesion, matricula, id } = this.props.estado
         return (
-            <form onSubmit={this._handleOnSubmit}>
+            <form onSubmit={this.props.estado.id === '' ? this.handleOnSubmit : this.handleOnUpload} id="form">
                 <div className="card">
-                    <div className="card-header text-center">
-                        <h2>Nuevo</h2>
-                    </div>
+                    {
+                        id === ''
+                        ?
+                        <div className="card-header text-center">
+                            <h2>Nuevo</h2>
+                        </div>
+                        :
+                        <div className="card-header text-center">
+                            <div className="d-flex">
+                            <h2>Actualizar</h2>
+                                <button className="ml-auto btn btn-success" onClick={() => this.props.empty()}>
+                                    <FontAwesomeIcon icon={faPlusCircle} />
+                                </button>
+                            </div>
+                        </div>
+                    }
                     <div className="card-body">
                         <div className="form-group">
                             <label>Nombre: </label>
-                            <input type="text" name="nombre" className="form-control" placeholder="Ej: Diego..." 
-                                onChange={this._handleChange}
-                                value={this.state.nombre} />
+                            <input type="text" name="nombre" className="form-control" placeholder="Ej: Diego..." required
+                                onChange={this.handleChange}
+                                value={nombre} 
+                               />
                         </div>
                         <div className="form-group">
                             <label>Apellido: </label>
-                            <input type="text" name="apellido" className="form-control" placeholder="Ej: Delgado..." 
-                                onChange={this._handleChange} 
-                                value={this.state.apellido} />
+                            <input type="text" name="apellido" className="form-control" placeholder="Ej: Delgado..." required
+                                onChange={this.handleChange}
+                                value={apellido} 
+                                />
                         </div>
                         <div className="form-group">
                             <label>Profesion: </label>
-                            <input type="text" name="profesion" className="form-control" placeholder="Ej: Ingniero..." 
-                                onChange={this._handleChange}
-                                value={this.state.profesion} />
+                            <input type="text" name="profesion" className="form-control" placeholder="Ej: Ingniero..." required
+                                onChange={this.handleChange}
+                                value={profesion} 
+                                />
                         </div>
                         <div className="form-group">
                             <label>Matricula: </label>
-                            <input type="text" name="matricula" className="form-control" placeholder="Ej: MN0427..." 
-                                onChange={this._handleChange}
-                                value={this.state.matricula} />
+                            <input type="text" name="matricula" className="form-control" placeholder="Ej: MN0427..." required
+                                onChange={this.handleChange}
+                                value={matricula} 
+                                />
                         </div>
-                        <div className="form-group">
-                            <button className="btn btn-primary btn-block" disabled={!isEnabled}>Enviar</button>
-                        </div>
+                        {
+                            this.props.estado.id === '' 
+                            ?
+                            <div className="form-group">
+                                <button className="btn btn-primary btn-block" disabled={!this.isEnabled()} >Enviar</button>
+                            </div>
+                            :
+                            <div className="form-group">
+                                <button className="btn btn-primary btn-block" disabled={!this.isEnabled()} >Actualizar</button>
+                            </div>
+                        }
                     </div>
                 </div>
             </form>
